@@ -4,6 +4,7 @@ const api = axios.create({
     baseURL: "http://localhost:5500/api",
     headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token") || ""}`,
     },
 });
 

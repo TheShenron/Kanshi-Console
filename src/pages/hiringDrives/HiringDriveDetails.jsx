@@ -8,7 +8,6 @@ export default function HiringDriveDetails() {
     const [exam, setExam] = useState(null);
     const [userId, setUserId] = useState("");
     const [examId, setExamId] = useState("");
-    const [attempts, setAttempts] = useState(0);
 
     const fetchDrive = async () => {
         const { data } = await api.get(`/hiring-drives/${id}/candidates`);
@@ -27,7 +26,7 @@ export default function HiringDriveDetails() {
     if (!drive) return <p>Loading...</p>;
 
     const addCandidate = async () => {
-        await api.post(`/hiring-drives/${id}/candidates`, { userId });
+        await api.post(`/hiring-drives/${id}/candidates`, { userId: [userId] });
         setUserId("");
         fetchDrive();
     };
@@ -37,15 +36,18 @@ export default function HiringDriveDetails() {
         fetchDrive();
     };
 
-    const updateAttempts = async (uid) => {
-        await api.patch(`/hiring-drives/${id}/candidates/${uid?._id}/attempts`, {
-            attemptsUsed: attempts,
-        });
+    const incAttempts = async (uid) => {
+        await api.patch(`/hiring-drives/${id}/candidates/${uid}/attempts/inc`);
+        fetchDrive();
+    };
+
+    const decAttempts = async (uid) => {
+        await api.patch(`/hiring-drives/${id}/candidates/${uid}/attempts/dec`);
         fetchDrive();
     };
 
     const addExam = async () => {
-        await api.post(`/hiring-drives/${id}/exam`, { examId });
+        await api.post(`/hiring-drives/${id}/exam`, { examIds: [examId] });
         setExamId("");
         fetchDrive();
     };
@@ -75,13 +77,12 @@ export default function HiringDriveDetails() {
                         {console.log(c)}
                         {c.userId?.name || c.userId?._id} — Attempts: {c.attemptsUsed}
                         <button onClick={() => removeCandidate(c.userId?._id)}>Remove</button>
-                        <input
-                            type="number"
-                            placeholder="Attempts"
-                            onChange={(e) => setAttempts(e.target.value)}
-                        />
-                        <button onClick={() => updateAttempts(c.userId)}>
-                            Update Attempts
+                        <button onClick={() => incAttempts(c.userId?._id)}>
+                            Attempts+1
+                        </button>
+
+                        <button onClick={() => decAttempts(c.userId?._id)}>
+                            Attempts-1
                         </button>
                     </li>
                 ))}
