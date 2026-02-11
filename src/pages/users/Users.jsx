@@ -8,6 +8,8 @@ export default function Users() {
         name: "",
         email: "",
         password: "",
+        role: 'candidate',
+        code: ''
     });
     const [editingId, setEditingId] = useState(null);
 
@@ -36,7 +38,7 @@ export default function Users() {
             await api.post("/users", form);
         }
 
-        setForm({ name: "", email: "", password: "" });
+        setForm({ name: "", email: "", password: "", role: 'candidate', code: '' });
         setEditingId(null);
         fetchUsers();
     };
@@ -46,7 +48,9 @@ export default function Users() {
         setForm({
             name: user.name,
             email: user.email,
+            role: user.role,
             password: "",
+            code: ''
         });
     };
 
@@ -60,7 +64,6 @@ export default function Users() {
         <div>
             <h1>Users API Tester</h1>
 
-            {/* CREATE / UPDATE */}
             <form onSubmit={submitForm}>
                 <h3>{editingId ? "Update User" : "Create User"}</h3>
 
@@ -81,9 +84,25 @@ export default function Users() {
                 />
 
                 <input
+                    name="role"
+                    placeholder="Role"
+                    value={form.role}
+                    onChange={handleChange}
+                    required
+                />
+
+                <input
                     name="password"
                     placeholder="Password"
                     value={form.password}
+                    onChange={handleChange}
+                    required={!editingId}
+                />
+
+                <input
+                    name="code"
+                    placeholder="code"
+                    value={form.code}
                     onChange={handleChange}
                     required={!editingId}
                 />
@@ -95,7 +114,6 @@ export default function Users() {
 
             <hr />
 
-            {/* LIST */}
             <h3>All Users</h3>
 
             <table
@@ -108,6 +126,7 @@ export default function Users() {
                     <tr>
                         <th>Name</th>
                         <th>Email</th>
+                        <th>Role</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -120,6 +139,8 @@ export default function Users() {
                             </td>
 
                             <td>{u.email}</td>
+
+                            <td>{u.role}</td>
 
                             <td style={{ display: "flex", gap: 10 }}>
                                 <button onClick={() => editUser(u)}>Edit</button>

@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../../api/axios";
 
-import { DateTime } from "luxon";
+import { DateTime, Duration } from "luxon";
+
+const formatDuration = (seconds) => {
+    if (seconds === null || seconds === undefined) return "-";
+    return Duration.fromObject({ seconds }).toFormat("hh:mm:ss");
+};
 
 const formatDateTime = (iso) => {
     if (!iso) return "-";
@@ -12,6 +17,7 @@ const formatDateTime = (iso) => {
 export default function HiringDriveDetails() {
     const { id } = useParams();
     const [drive, setDrive] = useState(null);
+    const [results, setResults] = useState(null);
     const [exam, setExam] = useState(null);
     const [userId, setUserId] = useState("");
     const [examId, setExamId] = useState("");
@@ -21,13 +27,20 @@ export default function HiringDriveDetails() {
         setDrive(data || {});
     };
 
+    const fetchDriveResult = async () => {
+        const { data } = await api.get(`/hiring-drives/${id}/results`);
+        setResults(data || {});
+    };
+
     const fetchExam = async () => {
         const { data } = await api.get(`/hiring-drives/${id}/exams`);
         setExam(data || {});
     };
+
     useEffect(() => {
         fetchDrive();
         fetchExam();
+        fetchDriveResult()
     }, [id]);
 
     if (!drive) return <p>Loading...</p>;
@@ -56,12 +69,12 @@ export default function HiringDriveDetails() {
     const addExam = async () => {
         await api.post(`/hiring-drives/${id}/exam`, { examIds: [examId] });
         setExamId("");
-        fetchDrive();
+        fetchExam();
     };
 
     const removeExam = async (eid) => {
         await api.delete(`/hiring-drives/${id}/exams/${eid}`);
-        fetchDrive();
+        fetchExam();
     };
 
     return (
@@ -182,6 +195,93 @@ export default function HiringDriveDetails() {
                                 </td>
                             </tr>
                         ))}
+                    </tbody>
+                </table>
+            )}
+
+
+            <h3>
+                Drive: {results?.data?.drive?.name} | Passing Marks:{" "}
+                {results?.data?.drive?.passingMarks}
+            </h3>
+
+            {results?.data?.candidates?.length === 0 ? (
+                <p>No candidates found</p>
+            ) : (
+                <table
+                    border="1"
+                    style={{
+                        borderCollapse: "collapse",
+                    }}
+                >
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Exam</th>
+                            <th>Attempt No</th>
+                            <th>Status</th>
+                            <th>Score</th>
+                            <th>Result</th>
+                            <th>Duration</th>
+                            <th>Started At</th>
+                            <th>Submitted At</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {results?.data?.candidates?.flatMap((c) => {
+                            // if no history → show one row saying not attempted
+                            if (!c?.history?.length) {
+                                return (
+                                    <tr key={c?.user?._id}>
+                                        <td><b>{c?.user?.name || "-"}</b></td>
+                                        <td>{c?.user?.email || "-"}</td>
+                                        <td colSpan={8} style={{ textAlign: "center" }}>
+                                            Not Attempted
+                                        </td>
+                                    </tr>
+                                );
+                            }
+
+                            // if history exists → one row per attempt
+                            return c.history.map((h) => (
+                                <tr key={h?._id}>
+                                    <td><b>{c?.user?.name || "-"}</b></td>
+                                    <td>{c?.user?.email || "-"}</td>
+
+                                    <td>{h?.examId?.title || "-"}</td>
+
+                                    <td>{h?.attemptNo ?? "-"}</td>
+
+                                    <td style={{ textTransform: "capitalize" }}>
+                                        {h?.status || "-"}
+                                    </td>
+
+                                    <td>{h?.score ?? 0}</td>
+
+                                    <td
+                                        style={{
+                                            fontWeight: "bold",
+                                            color: h?.isPassed ? "green" : "red",
+                                        }}
+                                    >
+                                        {h?.status === "started"
+                                            ? "Running ⏳"
+                                            : h?.status === "expired"
+                                                ? "Expired ⛔"
+                                                : h?.isPassed
+                                                    ? "Passed ✅"
+                                                    : "Failed ❌"}
+                                    </td>
+
+                                    <td>{formatDuration(h?.durationTaken ?? 0)}</td>
+
+                                    <td>{h?.startedAt ? formatDateTime(h.startedAt) : "-"}</td>
+                                    <td>{h?.submittedAt ? formatDateTime(h.submittedAt) : "-"}</td>
+                                </tr>
+                            ));
+                        })}
                     </tbody>
                 </table>
             )}

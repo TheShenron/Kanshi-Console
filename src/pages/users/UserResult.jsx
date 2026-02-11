@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../../api/axios";
-import { DateTime } from "luxon";
+import { DateTime, Duration } from "luxon";
 
 const formatDateTime = (iso) => {
     if (!iso) return "-";
@@ -9,77 +9,114 @@ const formatDateTime = (iso) => {
 };
 
 const formatDuration = (seconds) => {
-    if (!seconds && seconds !== 0) return "-";
-
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-
-    return `${mins}m ${secs}s`;
+    if (seconds === null || seconds === undefined) return "-";
+    return Duration.fromObject({ seconds }).toFormat("hh:mm:ss");
 };
 
 export default function UserResult() {
     const navigate = useNavigate();
-    const { hiringDriveId } = useParams();
-    const [drives, setDrives] = useState([]);
+    const { hiringDriveId, userId } = useParams();
+
+    const [drives, setDrives] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         api
-            .get(`/results/get/${hiringDriveId}`)
+            .get(`/users/${hiringDriveId}/results/${userId}`)
             .then((res) => setDrives(res.data))
             .finally(() => setLoading(false));
-    }, [hiringDriveId]);
+    }, [hiringDriveId, userId]);
 
     if (loading) return <p>Loading...</p>;
 
-    return (
-        <div>
-            <h1>User Results</h1>
-            <button onClick={() => navigate(-1)}>
-                ⬅ Back
-            </button>
+    let content = <p>No results found</p>;
 
-            {drives?.data?.length === 0 ? (
-                <p>No results found</p>
-            ) : (
+    if (drives?.data) {
+        if (drives?.data?.history?.length > 0) {
+            content = (
                 <table
                     border="1"
                     style={{
                         borderCollapse: "collapse",
+                        width: "100%",
                     }}
                 >
                     <thead>
                         <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Exam</th>
+                            <th>Attempt No</th>
+                            <th>Status</th>
                             <th>Score</th>
                             <th>Result</th>
-                            <th>Duration (sec)</th>
+                            <th>Duration</th>
                             <th>Started At</th>
                             <th>Submitted At</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        {drives?.data?.map((result) => {
-                            return (
-                                <tr key={result._id}>
+                        {drives?.data?.history?.map((h) => (
+                            <tr key={h?._id}>
+                                <td>
+                                    <b>{drives?.data?.user?.name || "-"}</b>
+                                </td>
 
-                                    <td>{result?.score ?? "-"}</td>
+                                <td>{drives?.data?.user?.email || "-"}</td>
 
-                                    <td style={{ fontWeight: "bold", color: result?.isPassed ? "green" : "red" }}>
-                                        {result ? (result.isPassed ? "Passed ✅" : "Failed ❌") : "Not Attempted"}
-                                    </td>
+                                <td>{h?.examId?.title || "-"}</td>
 
-                                    <td>{formatDuration(result?.durationTaken ?? 0)}</td>
+                                <td>{h?.attemptNo ?? "-"}</td>
 
-                                    <td>{result?.startedAt ? formatDateTime(result.startedAt) : "-"}</td>
-                                    <td>{result?.submittedAt ? formatDateTime(result.submittedAt) : "-"}</td>
-                                </tr>
-                            );
-                        })}
+                                <td style={{ textTransform: "capitalize" }}>
+                                    {h?.status || "-"}
+                                </td>
+
+                                <td>{h?.score ?? 0}</td>
+
+                                <td
+                                    style={{
+                                        fontWeight: "bold",
+                                        color: h?.isPassed ? "green" : "red",
+                                    }}
+                                >
+                                    {h?.status === "started"
+                                        ? "Running ⏳"
+                                        : h?.status === "expired"
+                                            ? "Expired ⛔"
+                                            : h?.isPassed
+                                                ? "Passed ✅"
+                                                : "Failed ❌"}
+                                </td>
+
+                                <td>{formatDuration(h?.durationTaken)}</td>
+
+                                <td>{h?.startedAt ? formatDateTime(h.startedAt) : "-"}</td>
+
+                                <td>{h?.submittedAt ? formatDateTime(h.submittedAt) : "-"}</td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
-            )}
+            );
+        } else {
+            content = <p>No attempts found</p>;
+        }
+    }
 
+    return (
+        <div>
+            <h1>User Results</h1>
+
+            <button onClick={() => navigate(-1)}>⬅ Back</button>
+
+            <h3>
+                Drive: {drives?.data?.drive?.name} | Passing Marks:{" "}
+                {drives?.data?.drive?.passingMarks}
+            </h3>
+
+            {content}
 
         </div>
     );

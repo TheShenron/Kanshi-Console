@@ -24,7 +24,7 @@ export default function AppRouter() {
                     element={<UserHiringDrives />}
                 />
                 <Route
-                    path="/users/:hiringDriveId/results"
+                    path="/users/:userId/:hiringDriveId/results"
                     element={<UserResult />}
                 />
 

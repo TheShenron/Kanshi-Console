@@ -4,13 +4,11 @@ import { DateTime, Duration } from "luxon";
 
 export default function Results() {
     const [startForm, setStartForm] = useState({
-        userId: "",
         examId: "",
         hiringDriveId: "",
     });
 
     const [submitForm, setSubmitForm] = useState({
-        userId: "",
         examId: "",
         hiringDriveId: "",
         score: 0,
@@ -26,9 +24,6 @@ export default function Results() {
     const [errorStart, setErrorStart] = useState("");
     const [errorSubmit, setErrorSubmit] = useState("");
 
-    // -------------------------
-    // Helpers
-    // -------------------------
     const formatDate = (date) => {
         if (!date) return "-";
         return DateTime.fromISO(date).toFormat("dd LLL yyyy, hh:mm a");
@@ -39,9 +34,6 @@ export default function Results() {
         return Duration.fromObject({ seconds }).toFormat("hh:mm:ss");
     };
 
-    // -------------------------
-    // Start Exam
-    // -------------------------
     const handleStartChange = (e) => {
         const { name, value } = e.target;
         setStartForm((prev) => ({ ...prev, [name]: value }));
@@ -54,7 +46,7 @@ export default function Results() {
         setStartResponse(null);
 
         try {
-            const { data } = await api.post("/results/start", startForm);
+            const { data } = await api.post("/results/me/start", startForm);
             setStartResponse(data);
         } catch (err) {
             setErrorStart(err?.response?.data?.message || err.message);
@@ -63,9 +55,6 @@ export default function Results() {
         }
     };
 
-    // -------------------------
-    // Submit Exam
-    // -------------------------
     const handleSubmitChange = (e) => {
         const { name, value, type, checked } = e.target;
         setSubmitForm((prev) => ({
@@ -86,7 +75,7 @@ export default function Results() {
                 score: Number(submitForm.score),
             };
 
-            const { data } = await api.post("/results/submit", payload);
+            const { data } = await api.post("/results/me/submit", payload);
             setSubmitResponse(data);
         } catch (err) {
             setErrorSubmit(err?.response?.data?.message || err.message);
@@ -95,24 +84,12 @@ export default function Results() {
         }
     };
 
-    // -------------------------
-    // UI
-    // -------------------------
     return (
         <div style={{ padding: 20 }}>
             <h1>Results API Tester</h1>
 
-            {/* START EXAM */}
             <form onSubmit={startExam} style={{ marginBottom: 30 }}>
                 <h3>Start Exam</h3>
-
-                <input
-                    name="userId"
-                    placeholder="User ID"
-                    value={startForm.userId}
-                    onChange={handleStartChange}
-                    required
-                />
 
                 <input
                     name="examId"
@@ -124,9 +101,10 @@ export default function Results() {
 
                 <input
                     name="hiringDriveId"
-                    placeholder="Hiring Drive ID (optional)"
+                    placeholder="Hiring Drive ID"
                     value={startForm.hiringDriveId}
                     onChange={handleStartChange}
+                    required
                 />
 
                 <div style={{ marginTop: 10 }}>
@@ -141,17 +119,33 @@ export default function Results() {
                     <div style={{ marginTop: 15 }}>
                         <h4>Start Response</h4>
 
-                        {/* Nice view */}
-                        <div style={{ background: "#f4f4f4", padding: 12, borderRadius: 8 }}>
+                        <div
+                            style={{
+                                background: "#f4f4f4",
+                                padding: 12,
+                                borderRadius: 8,
+                            }}
+                        >
+                            <p>
+                                <b>Attempt No:</b> {startResponse?.data?.attemptNo ?? "-"}
+                            </p>
+
+                            <p>
+                                <b>Status:</b>{" "}
+                                <span style={{ fontWeight: "bold" }}>
+                                    {startResponse?.data?.status || "-"}
+                                </span>
+                            </p>
+
                             <p>
                                 <b>Started At:</b> {formatDate(startResponse?.data?.startedAt)}
                             </p>
+
                             <p>
                                 <b>Result ID:</b> {startResponse?.data?._id || "-"}
                             </p>
                         </div>
 
-                        {/* Raw JSON */}
                         <pre style={{ marginTop: 10 }}>
                             {JSON.stringify(startResponse, null, 2)}
                         </pre>
@@ -161,17 +155,8 @@ export default function Results() {
 
             <hr />
 
-            {/* SUBMIT EXAM */}
             <form onSubmit={submitExam} style={{ marginTop: 30 }}>
                 <h3>Submit Exam</h3>
-
-                <input
-                    name="userId"
-                    placeholder="User ID"
-                    value={submitForm.userId}
-                    onChange={handleSubmitChange}
-                    required
-                />
 
                 <input
                     name="examId"
@@ -180,11 +165,13 @@ export default function Results() {
                     onChange={handleSubmitChange}
                     required
                 />
+
                 <input
                     name="hiringDriveId"
-                    placeholder="Hiring Drive ID (optional)"
+                    placeholder="Hiring Drive ID"
                     value={submitForm.hiringDriveId}
                     onChange={handleSubmitChange}
+                    required
                 />
 
                 <input
@@ -218,28 +205,52 @@ export default function Results() {
                     <div style={{ marginTop: 15 }}>
                         <h4>Submit Response</h4>
 
-                        {/* Nice view */}
-                        <div style={{ background: "#f4f4f4", padding: 12, borderRadius: 8 }}>
+                        <div
+                            style={{
+                                background: "#f4f4f4",
+                                padding: 12,
+                                borderRadius: 8,
+                            }}
+                        >
+                            <p>
+                                <b>Attempt No:</b> {submitResponse?.data?.attemptNo ?? "-"}
+                            </p>
+
+                            <p>
+                                <b>Status:</b>{" "}
+                                <span style={{ fontWeight: "bold" }}>
+                                    {submitResponse?.data?.status || "-"}
+                                </span>
+                            </p>
+
                             <p>
                                 <b>Started At:</b> {formatDate(submitResponse?.data?.startedAt)}
                             </p>
+
                             <p>
                                 <b>Submitted At:</b>{" "}
                                 {formatDate(submitResponse?.data?.submittedAt)}
                             </p>
+
                             <p>
                                 <b>Duration Taken:</b>{" "}
                                 {formatDuration(submitResponse?.data?.durationTaken)}
                             </p>
+
                             <p>
-                                <b>Score:</b> {submitResponse?.data?.score}
+                                <b>Score:</b> {submitResponse?.data?.score ?? 0}
                             </p>
-                            <p>
-                                <b>Passed:</b> {String(submitResponse?.data?.isPassed)}
+
+                            <p
+                                style={{
+                                    fontWeight: "bold",
+                                    color: submitResponse?.data?.isPassed ? "green" : "red",
+                                }}
+                            >
+                                {submitResponse?.data?.isPassed ? "Passed ✅" : "Failed ❌"}
                             </p>
                         </div>
 
-                        {/* Raw JSON */}
                         <pre style={{ marginTop: 10 }}>
                             {JSON.stringify(submitResponse, null, 2)}
                         </pre>
