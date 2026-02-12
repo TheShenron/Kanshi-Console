@@ -1,16 +1,53 @@
-# React + Vite
+# Kanshi Console — Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Kanshi Console** is the frontend dashboard for the Kanshi ecosystem.
 
-Currently, two official plugins are available:
+It provides examiners and admins with a clean interface to review proctoring sessions, candidate activity, and event logs collected from the Kanshi extension — powered by Kanshi Core.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Simple. Fast. Audit-friendly.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ✨ What Kanshi Console Does
 
-## Expanding the ESLint configuration
+Kanshi Console is built for review and clarity.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+It allows you to:
+
+- 👤 Manage users and roles (admin / examiner / candidate)
+- 🧾 View assessment sessions
+- 🔎 Inspect detailed proctoring logs
+- 👁️ Track focus changes, clipboard usage, and shortcut activity
+- 📊 Monitor candidate behavior patterns over time
+- 📥 Export logs for reporting (optional)
+
+---
+
+## ⚔️ Features
+
+- 🧭 Clean examiner-friendly dashboard UI
+- 📋 Session list + candidate profiles
+- 🔍 Detailed log viewer with timestamps
+- 👁️ Focus-loss + tab-switch tracking visualization
+- 📋 Clipboard and shortcut event review
+- 🔐 Secure access via Kanshi Core authentication
+- 📦 Built to scale with more analytics in the future
+
+---
+
+## 🧩 Requirements
+
+> Update these based on your stack.
+
+- Node.js 18+ (recommended)
+- React.js @latest
+- Kanshi Core running and accessible
+
+---
+
+## ⚙️ Environment Variables
+
+Create a `.env` file in the root:
+
+```env
+VITE_API_URL=http://localhost:5000
