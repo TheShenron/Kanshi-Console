@@ -27,6 +27,15 @@ export default function UserResult() {
             .finally(() => setLoading(false));
     }, [hiringDriveId, userId]);
 
+
+    useEffect(() => {
+        api
+            .get(`/users/me/hiring-drives-exam/${hiringDriveId}`)
+            .then((res) => console.log(res.data))
+            .finally(() => console.log("Finally"));
+    }, []);
+
+
     if (loading) return <p>Loading...</p>;
 
     let content = <p>No results found</p>;
