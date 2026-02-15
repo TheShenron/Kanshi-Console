@@ -10,6 +10,7 @@ import Results from "../pages/result/Results";
 import Login from '../pages/login/Login'
 import Proctoring from "../pages/Proctoring/Proctoring";
 import UserResult from "../pages/users/UserResult";
+import UserProctoringReport from "../pages/users/UserProctroing";
 
 export default function AppRouter() {
     return (
@@ -26,6 +27,11 @@ export default function AppRouter() {
                 <Route
                     path="/users/:userId/:hiringDriveId/results"
                     element={<UserResult />}
+                />
+
+                <Route
+                    path="/proctoring/:resultId/:userId"
+                    element={<UserProctoringReport />}
                 />
 
                 {/* HiringDrives */}

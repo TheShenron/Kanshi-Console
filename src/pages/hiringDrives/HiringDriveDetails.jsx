@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 
 import { DateTime, Duration } from "luxon";
@@ -15,6 +15,7 @@ const formatDateTime = (iso) => {
 };
 
 export default function HiringDriveDetails() {
+    const navigate = useNavigate();
     const { id } = useParams();
     const [drive, setDrive] = useState(null);
     const [results, setResults] = useState(null);
@@ -231,6 +232,7 @@ export default function HiringDriveDetails() {
                             <th>Duration</th>
                             <th>Started At</th>
                             <th>Submitted At</th>
+                            <th>View</th>
                         </tr>
                     </thead>
 
@@ -284,6 +286,11 @@ export default function HiringDriveDetails() {
 
                                     <td>{h?.startedAt ? formatDateTime(h.startedAt) : "-"}</td>
                                     <td>{h?.submittedAt ? formatDateTime(h.submittedAt) : "-"}</td>
+                                    <td>
+                                        <button onClick={() => navigate(`/proctoring/${h?._id}/${h?.userId?._id}`)}>
+                                            View
+                                        </button>
+                                    </td>
                                 </tr>
                             ));
                         })}

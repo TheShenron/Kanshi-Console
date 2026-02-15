@@ -62,6 +62,7 @@ export default function UserResult() {
                             <th>Duration</th>
                             <th>Started At</th>
                             <th>Submitted At</th>
+                            <th>View</th>
                         </tr>
                     </thead>
 
@@ -104,6 +105,12 @@ export default function UserResult() {
                                 <td>{h?.startedAt ? formatDateTime(h.startedAt) : "-"}</td>
 
                                 <td>{h?.submittedAt ? formatDateTime(h.submittedAt) : "-"}</td>
+
+                                <td>
+                                    <button onClick={() => navigate(`/proctoring/${h?._id}/${userId}`)}>
+                                        View
+                                    </button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
